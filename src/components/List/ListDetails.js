@@ -3,43 +3,68 @@ import React from 'react';
 
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { useDataFetching } from '../../utils';
 import config from '../../config';
 
-function GetResultOfYear(id) {
-    const { loading, results, error } = useDataFetching({
-        url: `${config.url.result}${id}`,
-        method: 'GET',
-        body: null,
-        statusCode: 200
-    });
-    console.log(`${config.url.result}${id}`)
+async function GetResultOfYear(id) {
 
-    if (loading || error) {
-        return loading ? <div style={{ textAlign: 'center', marginTop: 250 }}>
-            <CircularProgress />
-        </div> : error.message;
+    try {
+        return await fetch(`${config.url.result}${id}`, {
+
+            method: 'GET',
+            headers: new Headers({
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': 'http://localhost',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+                'Access-Control-Request-Method': 'GET',
+
+            }),
+        }).then(function (response) {
+            console.log('response is : ' + response.data);
+        }).catch(function (error) {
+            if (error.response) {
+                console.log(error.response.headers);
+            }
+            else if (error.request) {
+                console.log(error.request);
+            }
+            else {
+                console.log(error.message);
+            }
+            console.log(error.config);
+        });
+        // console.log(data)
+        // const json = await data.json()
+
+        // console.log(json)
+        // return json
     }
-    return results
+    catch (error) {
+        console.log('ERROR', error)
+        return error
+    }
 }
 
 function Details({ results, classes }) {
 
+
     const lastYear = GetResultOfYear(results[0])
+
+    console.log('ICIC', lastYear)
     // const AtYear = GetResultOfYear(results[1])
 
-    console.log(lastYear)
+    if (!lastYear) {
+        return <h3>ERROR</h3>
+    }
 
-    return (
-        <div className={classes.root}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', padding: 5 }}>
+    return (<div className={classes.root}>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', padding: 5 }}>
 
-                </div>
-                <div style={{ display: 'flex', padding: 5 }}>
-                </div>
+            </div>
+            <div style={{ display: 'flex', padding: 5 }}>
             </div>
         </div>
+    </div>
     );
 }
 

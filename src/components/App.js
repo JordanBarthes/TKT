@@ -121,7 +121,7 @@ function Home() {
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         value={filter}
-                        onChange={handleChangeFilter}
+                        onChange={(e) => handleChangeFilter(e)}
                     >
                         <MenuItem value={'id'}>Id Asc/Desc</MenuItem>
                         <MenuItem value={'name'}>Name Asc/Desc</MenuItem>

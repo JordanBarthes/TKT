@@ -16,7 +16,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 
-import { useDataFetching } from '../../utils';
+
 import config from '../../config';
 
 import ListDetails from './ListDetails';
@@ -123,6 +123,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
+
 export default function ListData(props) {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
@@ -131,18 +132,39 @@ export default function ListData(props) {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-    const { loading, results, error } = useDataFetching({
-        url: config.url.biz,
-        method: 'GET',
-        body: null,
-        statusCode: 200
-    });
+    const [loading, setLoading] = React.useState(true);
+    const [results, setResults] = React.useState([]);
+    const [error, setError] = React.useState("");
+
+    React.useEffect(() => {
+        async function fetchData() {
+            try {
+                const json = await fetch(config.url.biz);
+
+                const data = await json.json()
+
+                console.log(data)
+
+                if (data) {
+                    setLoading(false);
+                    setResults(data);
+                }
+            } catch (error) {
+                setLoading(false);
+                setError(error.message);
+            }
+            setLoading(false);
+        }
+        fetchData();
+    }, [config.url.biz]);
 
     if (loading || error) {
         return loading ? <div style={{ textAlign: 'center', marginTop: 250 }}>
             <CircularProgress />
         </div> : error.message;
     }
+
+
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
