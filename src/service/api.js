@@ -1,27 +1,21 @@
-import config from '../config';
-
-export const api = async (url, method, body = null, headers = {}) => {
+export const api = async (url, method, body = null) => {
   try {
 
-    const fetchParams = { method, body: body, headers };
+    const fetchParams = { method, body: body, };
 
     if ((method === 'POST' || method === 'PUT') && !body) {
       throw new Error('Request body required', fetchParams);
     }
 
-    if (body) {
-      fetchParams.mode = 'no-cors';
-      fetchParams.headers = new Headers(
-        {
-          'Content-Type': 'text/xml; charset=utf-8',
-          'Accept': '*/*',
-          'Accept-Language': 'en-GB',
-          'Accept-Encoding': 'gzip, deflate',
-          'Connection': 'Keep-alive',
-          'Content-Length': body.length
-        });
-    }
-    const response = await fetch(url, fetchParams);
+    fetchParams.headers = new Headers({
+      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Request-Headers': 'http://localhost:3000'
+    })
+
+    const response = await fetch(url, {
+      Accept: '*/*',
+      Origin: 'http://localhost:3000'
+    });
     return response;
   } catch (e) {
     return e;
@@ -29,21 +23,13 @@ export const api = async (url, method, body = null, headers = {}) => {
 };
 
 export const fetchApi = async ({ url,
-  method, body, statusCode = null, token = null }) => {
+  method, body, statusCode = null }) => {
   try {
-    const headers = {};
-    const result = {
-      token,
-      success: false,
-      responseBody: null
-    };
-
-    const response = await api(url, method, body, headers);
+    const response = await api(url, method, body);
     if (response.status === statusCode) {
-      result.success = true;
-      result.responseBody = response.json();
-      return result;
+      return response.json();
     }
+    return false
   } catch (error) {
     return error;
   }
