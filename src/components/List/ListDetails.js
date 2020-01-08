@@ -1,70 +1,104 @@
-import React from 'react';
-
-
-import CircularProgress from '@material-ui/core/CircularProgress';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 import config from '../../config';
 
-async function GetResultOfYear(id) {
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-    try {
-        return await fetch(`${config.url.result}${id}`, {
+import { Bar } from 'react-chartjs-2';
 
-            method: 'GET',
-            headers: new Headers({
-                'Accept': 'application/json',
-                'Access-Control-Allow-Origin': 'http://localhost',
-                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-                'Access-Control-Request-Method': 'GET',
-
-            }),
-        }).then(function (response) {
-            console.log('response is : ' + response.data);
-        }).catch(function (error) {
-            if (error.response) {
-                console.log(error.response.headers);
+function Graph(props) {
+    return <Bar
+        data={props.chartData}
+        width={50}
+        height={15}
+        options={{
+            legend: {
+                display: false,
             }
-            else if (error.request) {
-                console.log(error.request);
-            }
-            else {
-                console.log(error.message);
-            }
-            console.log(error.config);
-        });
-        // console.log(data)
-        // const json = await data.json()
-
-        // console.log(json)
-        // return json
-    }
-    catch (error) {
-        console.log('ERROR', error)
-        return error
-    }
+        }}
+    />
 }
+
+Graph.propTypes = {
+    chartData: PropTypes.object.isRequired,
+};
 
 function Details({ results, classes }) {
 
+    const [stats, setStats] = useState([]);
+    const [statsLastYear, setLastStats] = useState([]);
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
-    const lastYear = GetResultOfYear(results[0])
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const map = results.map(async e => {
+                    const data = await fetch(`${config.url.result}${e}/`)
+                    return data.json()
+                });
 
-    console.log('ICIC', lastYear)
-    // const AtYear = GetResultOfYear(results[1])
+                Promise.all(map).then(function (values) {
+                    if (values) {
+                        setLoading(false);
+                        setStats(values[0]);
+                        setLastStats(values[1]);
+                    }
+                });
 
-    if (!lastYear) {
-        return <h3>ERROR</h3>
+            } catch (error) {
+                setLoading(false);
+                setError(error.message);
+            }
+            setLoading(false);
+        }
+        fetchData();
+    }, []);
+
+    const chartData = {
+        labels: [`Chiffre d'affaire ${statsLastYear.year}`, `Chiffre d'affaire ${stats.year}`, `Charges ${statsLastYear.year}`, `Charges ${stats.year}`, `Bénéfice ${statsLastYear.year}`, `Bénéfice ${stats.year}`, `Ebitda ${statsLastYear.year}`, `Ebitda ${stats.year}`],
+        datasets: [
+            {
+                data: [
+                    statsLastYear.ca,
+                    stats.ca,
+                    statsLastYear.loss,
+                    stats.loss,
+                    statsLastYear.margin,
+                    stats.margin,
+                    statsLastYear.ebitda,
+                    stats.ebitda,
+                ],
+                backgroundColor: [
+                    'rgb(51, 153, 255, 0.8)',
+                    'rgb(255, 51, 51, 0.8)',
+                    'rgb(51, 153, 255, 0.8)',
+                    'rgb(255, 51, 51, 0.8)',
+                    'rgb(51, 153, 255, 0.8)',
+                    'rgb(255, 51, 51, 0.8)',
+                    'rgb(51, 153, 255, 0.8)',
+                    'rgb(255, 51, 51, 0.8)',
+                ],
+            }
+        ]
     }
 
-    return (<div className={classes.root}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', padding: 5 }}>
-
-            </div>
-            <div style={{ display: 'flex', padding: 5 }}>
+    if (loading || error) {
+        return loading ? <div className={classes.root}>
+            <div style={{ textAlign: 'center', marginTop: 30, marginBottom: 30 }}>
+                <CircularProgress />
             </div>
         </div>
-    </div>
+            : error.message;
+    }
+
+    return (
+        <div className={classes.root}>
+            <div style={{ padding: 10 }}>
+                <Graph chartData={chartData}></Graph>
+            </div>
+        </div>
     );
 }
 

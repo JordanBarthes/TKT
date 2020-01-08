@@ -143,8 +143,6 @@ export default function ListData(props) {
 
                 const data = await json.json()
 
-                console.log(data)
-
                 if (data) {
                     setLoading(false);
                     setResults(data);
