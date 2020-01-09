@@ -81,7 +81,7 @@ function Details({ results, classes }) {
 
     if (loading || error) {
         return loading ? <div className={classes.fullWidth}>
-            <div style={{ textAlign: 'center', marginTop: 30, marginBottom: 30 }}>
+            <div className={classes.loading}>
                 <CircularProgress />
             </div>
         </div>

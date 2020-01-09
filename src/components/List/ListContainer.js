@@ -110,6 +110,11 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center'
     },
+    loading: {
+        textAlign: 'center',
+        marginTop: 30,
+        marginBottom: 30
+    },
     paper: {
         width: '100%',
         marginBottom: theme.spacing(2),

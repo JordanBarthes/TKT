@@ -12,7 +12,7 @@ const style = () => ({
 });
 const Page404 = ({ classes }) => (
     <Typography className={classes.page404} align='center'
-        variant="display4" gutterBottom>
+        variant="h1" gutterBottom>
         PAGE 404
   </Typography>
 );
