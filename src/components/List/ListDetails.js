@@ -15,7 +15,7 @@ function Graph(props) {
         options={{
             legend: {
                 display: false,
-            }
+            },
         }}
     />
 }
@@ -32,34 +32,27 @@ function Details({ results, classes }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchData() {
-            try {
-                const map = results.map(async e => {
-                    const data = await fetch(`${config.url.result}${e}/`)
-                    return data.json()
-                });
-
-                Promise.all(map).then(function (values) {
-                    if (values) {
-                        setLoading(false);
-                        setStats(values[0]);
-                        setLastStats(values[1]);
-                    }
-                });
-
-            } catch (error) {
-                setLoading(false);
-                setError(error.message);
-            }
+        try {
+            const map = results.map(e => fetch(`${config.url.result}${e}/`).then(data => data.json()));
+            Promise.all(map).then(values => {
+                if (values) {
+                    setLoading(false);
+                    setStats(values[0]);
+                    setLastStats(values[1]);
+                }
+            })
+        } catch (error) {
             setLoading(false);
+            setError(error.message);
         }
-        fetchData();
-    }, []);
+        setLoading(false);
+    }, [results]);
 
     const chartData = {
         labels: [`Chiffre d'affaire ${statsLastYear.year}`, `Chiffre d'affaire ${stats.year}`, `Charges ${statsLastYear.year}`, `Charges ${stats.year}`, `Bénéfice ${statsLastYear.year}`, `Bénéfice ${stats.year}`, `Ebitda ${statsLastYear.year}`, `Ebitda ${stats.year}`],
         datasets: [
             {
+                label: 'Résultat en (euros)',
                 data: [
                     statsLastYear.ca,
                     stats.ca,
@@ -80,12 +73,14 @@ function Details({ results, classes }) {
                     'rgb(51, 153, 255, 0.8)',
                     'rgb(255, 51, 51, 0.8)',
                 ],
+                borderWidth: 1,
+                hoverBorderColor: 'black',
             }
         ]
     }
 
     if (loading || error) {
-        return loading ? <div className={classes.root}>
+        return loading ? <div className={classes.fullWidth}>
             <div style={{ textAlign: 'center', marginTop: 30, marginBottom: 30 }}>
                 <CircularProgress />
             </div>
@@ -94,11 +89,11 @@ function Details({ results, classes }) {
     }
 
     return (
-        <div className={classes.root}>
+        <div className={classes.fullWidth}>
             <div style={{ padding: 10 }}>
                 <Graph chartData={chartData}></Graph>
             </div>
-        </div>
+        </div >
     );
 }
 

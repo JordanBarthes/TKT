@@ -6,10 +6,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import TablePagination from '@material-ui/core/TablePagination';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-
-import Refresh from '@material-ui/icons/Refresh';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
@@ -53,31 +52,25 @@ function getSorting(order, orderBy) {
 }
 
 const headCells = [
-    { id: 'id', numeric: true, disablePadding: false, label: 'id' },
-    { id: 'sector', numeric: false, disablePadding: false, label: 'Secteur' },
-    { id: 'name', numeric: false, disablePadding: false, label: 'Name' },
-    { id: 'siren', numeric: true, disablePadding: false, label: 'Siren' },
+    { id: 'id', label: 'id' },
+    { id: 'sector', label: 'Secteur' },
+    { id: 'name', label: 'Name' },
+    { id: 'siren', label: 'Siren' },
 ];
 
 function EnhancedTableHead(props) {
-    const { classes, order, orderBy, onRequestSort } = props;
-    const createSortHandler = property => event => {
-        onRequestSort(event, property);
-    };
+    const { classes, onRequestSort, order, orderBy } = props;
+    const createSortHandler = property => event => onRequestSort(event, property);
     return (
-        <ExpansionPanel expanded={false}>
-            <div style={{
-                padding: 24,
-                display: 'flex',
-            }}>
-                {headCells.map(headCell => (
-                    <div key={headCell.id} onClick={(event) => event.stopPropagation() && createSortHandler(headCell.id)} className={classes.column}>
-                        <Typography className={classes.heading}>{headCell.label}</Typography>
-                    </div>
-                ))}
-                <Button><Refresh style={{ cursor: 'pointer' }} onClick={() => console.log('REFRESHSHH')} /></Button>
-            </div>
-        </ExpansionPanel>
+        <div className={classes.header}>
+            {headCells.map(headCell => (
+                <div key={headCell.id} className={classes.headerName} onClick={createSortHandler(headCell.id)}>
+                    <Typography className={classes.heading}>{headCell.label}</Typography>
+                    {order === 'asc' && orderBy === headCell.id && <KeyboardArrowUpIcon />}
+                    {order === 'desc' && orderBy === headCell.id && <KeyboardArrowDownIcon />}
+                </div>
+            ))}
+        </div>
     );
 }
 
@@ -91,17 +84,31 @@ EnhancedTableHead.propTypes = {
 
 const useStyles = makeStyles(theme => ({
     root: {
-        width: '100%',
+        margin: 25
+    },
+    header: {
+        padding: 24,
+        cursor: 'pointer',
+        display: 'flex',
+        boxShadow: '0px 2px 7px -2px'
+    },
+    fullWidth: {
+        width: '100%'
     },
     heading: {
         fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 16
     },
     elementList: {
         fontSize: 16
     },
     column: {
         flexBasis: '33.33%',
+    },
+    headerName: {
+        flexBasis: '33.33%',
+        display: 'flex',
+        alignItems: 'center'
     },
     paper: {
         width: '100%',
@@ -120,6 +127,15 @@ const useStyles = makeStyles(theme => ({
         position: 'absolute',
         top: 20,
         width: 1,
+    },
+    panel: {
+        paddingBottom: 5,
+        paddingTop: 5,
+        boxShadow: '0px 2px 7px -2px',
+        '&:hover': {
+            backgroundColor: 'rgb(238, 238, 238, 0.8)',
+            elevation: 3
+        }
     }
 }));
 
@@ -130,31 +146,23 @@ export default function ListData(props) {
     const [orderBy, setOrderBy] = React.useState('id');
     const [selected, setSelected] = React.useState([]);
     const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     const [loading, setLoading] = React.useState(true);
     const [results, setResults] = React.useState([]);
     const [error, setError] = React.useState("");
 
     React.useEffect(() => {
-        async function fetchData() {
-            try {
-                const json = await fetch(config.url.biz);
-
-                const data = await json.json()
-
-                if (data) {
-                    setLoading(false);
-                    setResults(data);
-                }
-            } catch (error) {
+        fetch(config.url.biz).then(json => json.json())
+            .then(data => {
+                setLoading(false);
+                setResults(data);
+            })
+            .catch(error => {
                 setLoading(false);
                 setError(error.message);
-            }
-            setLoading(false);
-        }
-        fetchData();
-    }, [config.url.biz]);
+            })
+    }, []);
 
     if (loading || error) {
         return loading ? <div style={{ textAlign: 'center', marginTop: 250 }}>
@@ -162,24 +170,15 @@ export default function ListData(props) {
         </div> : error.message;
     }
 
-
-
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
 
-    const handleClick = (name) => {
-        if (selected === name) {
-            return setSelected('');
-        }
-        setSelected(name);
-    };
+    const handleClick = name => setSelected(selected === name ? '' : name);
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+    const handleChangePage = (event, newPage) => setPage(newPage);
 
     const handleChangeRowsPerPage = event => {
         setRowsPerPage(parseInt(event.target.value, 10));
@@ -187,6 +186,8 @@ export default function ListData(props) {
     };
 
     const isSelected = name => selected === name;
+
+    const data = stableSort(results, getSorting(order, orderBy), props.inputValue)
 
     return (
         <div className={classes.root}>
@@ -199,18 +200,14 @@ export default function ListData(props) {
                     onRequestSort={handleRequestSort}
                     rowCount={results.length}
                 />
-                {stableSort(results, getSorting(order, orderBy), props.inputValue)
+                {data
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row, index) => {
                         const isItemSelected = isSelected(row.name);
                         return (
-                            <div key={index} className={classes.root}>
-                                <ExpansionPanel style={{
-                                    paddingBottom: 5,
-                                    paddingTop: 5,
-                                }} expanded={isItemSelected}
+                            <div key={index} className={classes.fullWidth}>
+                                <ExpansionPanel className={classes.panel} expanded={isItemSelected}
                                     onChange={() => handleClick(row.name)}>
-
                                     <ExpansionPanelSummary
                                         expandIcon={<ExpandMoreIcon />}
                                         aria-controls={`panel${index}-content`}
@@ -242,7 +239,7 @@ export default function ListData(props) {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 20, 30, 50]}
                 component="div"
-                count={results.length}
+                count={data.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onChangePage={handleChangePage}

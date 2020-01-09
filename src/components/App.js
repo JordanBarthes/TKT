@@ -1,28 +1,15 @@
 import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
-
-
-//Select
-
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-
+import logo from '../tktLogo.png';
 import { ListContainer } from './List';
 
 const useStyles = makeStyles(theme => ({
     root: {
         flexGrow: 1,
-    },
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 140,
     },
     selectEmpty: {
         marginTop: theme.spacing(2),
@@ -80,20 +67,15 @@ const useStyles = makeStyles(theme => ({
 function Home() {
     const classes = useStyles();
     const [value, setValue] = React.useState('');
-    const [filter, setFilter] = React.useState();
-
-    const handleChangeFilter = event => {
-        setFilter(event.target.value);
-    };
 
     return (
         <div>
             <div className={classes.root}>
                 <AppBar position="static">
                     <Toolbar>
-                        <Typography className={classes.title} variant="h6" noWrap>
-                            TKT test technique
-                        </Typography>
+                        <div className={classes.title}>
+                            <img style={{ width: 180 }} src={logo} alt="Logo" />
+                        </div>
                         <div className={classes.search}>
                             <div className={classes.searchIcon}>
                                 <SearchIcon />
@@ -112,28 +94,8 @@ function Home() {
                     </Toolbar>
                 </AppBar>
             </div>
-            <div style={{
-                textAlign: 'right',
-            }}>
-                <FormControl className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-label">Filter</InputLabel>
-                    <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={filter}
-                        onChange={(e) => handleChangeFilter(e)}
-                    >
-                        <MenuItem value={'id'}>Id Asc/Desc</MenuItem>
-                        <MenuItem value={'name'}>Name Asc/Desc</MenuItem>
-                        <MenuItem value={'sector'}>Sector Asc/Desc</MenuItem>
-                        <MenuItem value={'siren'}>Siren Asc/Desc</MenuItem>
-                    </Select>
-                </FormControl>
-            </div>
-
-            <ListContainer inputValue={value}></ListContainer>
+            <ListContainer inputValue={value} />
         </div>
     );
 }
-
 export default Home;
